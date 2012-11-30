@@ -1,6 +1,5 @@
 import sublime
 import sublime_plugin
-import os
 import urllib2
 from bs4 import BeautifulSoup
 import webbrowser
@@ -11,6 +10,7 @@ def request(var):
     s = "http://clojuredocs.org/search?q=%s" % var
     req = urllib2.urlopen(s).read()
     return req
+
 
 def content_request(url):
     "nvm this"
@@ -53,7 +53,7 @@ def parse_list(item):
 def seealso_search(url):
     v = content_request(url)
     soup = BeautifulSoup(v)
-    stuff = soup.body.find_all("li","see_also_item")
+    stuff = soup.body.find_all("li", "see_also_item")
     items = []
     sites = []
     for i in stuff:
@@ -62,13 +62,14 @@ def seealso_search(url):
         sites.append(web)
     return (items, sites)
 
+
 def new_parse(n):
     http = "http://clojuredocs.org"
     dic = []
     #Name
-    dic.append(str(n.find("span","name").text))
+    dic.append(str(n.find("span", "name").text))
     #Doc
-    p = n.find("p","shortdoc").text
+    p = n.find("p", "shortdoc").text
     if p:
         if len(p) > 66:
             p = p[:66] + "....."
@@ -76,24 +77,26 @@ def new_parse(n):
     else:
         dic.append("No Documentation")
     #Namespace
-    dic.append("Namespace: %s" % str(n.find("span","ns").text[:-1]))
+    dic.append("Namespace: %s" % str(n.find("span", "ns").text[:-1]))
     #http
-    web = http+n.find("a").get("href")
+    web = http + n.find("a").get("href")
     return (dic, web)
+
 
 def parse_source(url):
     v = content_request(url)
     soup = BeautifulSoup(v)
-    stuff = soup.find("div","source_content")
+    stuff = soup.find("div", "source_content")
     l = []
     if not stuff:
-        ret = " \n"+"NO SOURCE! OMG!\n"
+        ret = " \n" + "NO SOURCE! OMG!\n"
         l.append(ret.split("\n"))
         return l
     stuff = stuff.find("pre", "brush: clojure")
-    ret = " \n"+stuff.text
+    ret = " \n" + stuff.text
     l.append(ret.split("\n"))
     return l
+
 
 def parse_example(url):
     v = content_request(url)
@@ -101,12 +104,13 @@ def parse_example(url):
     stuff = soup.find("div", "hidden plain_content")
     l = []
     if not stuff:
-        ret = " \n"+"NO EXAMPLES! OMG!\n"
+        ret = " \n" + "NO EXAMPLES! OMG!\n"
         l.append(ret.split("\n"))
         return l
-    ret = " \n"+stuff.text
+    ret = " \n" + stuff.text
     l.append(ret.split("\n"))
     return l
+
 
 def parse_doc(url):
     v = content_request(url)
@@ -116,12 +120,13 @@ def parse_doc(url):
         e.replace_with("\n")
     l = []
     if not stuff:
-        ret = " \n"+"NO DOCS! OMG GO FIX NAOW!!\n"
+        ret = " \n" + "NO DOCS! OMG GO FIX NAOW!!\n"
         l.append(ret.split("\n"))
         return l
-    ret = " \n"+stuff.text
+    ret = " \n" + stuff.text
     l.append(ret.split("\n"))
     return l
+
 
 class CljSearchCommand(sublime_plugin.WindowCommand):
     def run(self):
@@ -131,8 +136,11 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
     def on_done(self, search):
         """Fetches the search results"""
         self.res, search_links = bs4_parse(search)
+        for i in range(0, len(self.res)):
+            if search == self.res[i][0]:
+                self.done(i)
         self.search(s=self.res, link=search_links)
-
+        return 0
 
     def search(self, s=None, link=None):
         """Created a seperate method for the search.
@@ -173,7 +181,6 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
                     ]
         self.window.show_quick_panel(options, self.inser_back)
 
-
     def inser_back(self, num):
         if num == 0:
             buffr = "\n".join(self.inser_content[0])
@@ -181,13 +188,12 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
             e = view.begin_edit()
             for r in view.sel():
                 if r.empty():
-                    view.insert (e, r.a, buffr[2:])
+                    view.insert(e, r.a, buffr[2:])
                 else:
                     view.replace(e, r,   buffr[2:])
             view.end_edit(e)
         if num == 1:
             self.done(self.num)
-
 
     def selected_item(self, num):
         self.t = 0
@@ -212,10 +218,10 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
 
 
 def expanded_selection(view, line, left, right):
-    pat = re.compile('^[A-Za-z0-9_.-]+$')
+    pat = re.compile('^[A-Za-z0-9_.-?*]+$')
     while left > line.begin() and re.match(pat, view.substr(left-1)): left -= 1
     while right < line.end() and re.match(pat, view.substr(right)): right += 1
-    return view.substr(sublime.Region(left,right))
+    return view.substr(sublime.Region(left, right))
 
 
 def selection_words(view):
