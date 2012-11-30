@@ -4,6 +4,7 @@ import os
 import urllib2
 from bs4 import BeautifulSoup
 import webbrowser
+import re
 
 
 def request(var):
@@ -42,7 +43,7 @@ def parse_list(item):
     else:
         dic.append("No Documentation")
     #What lib
-    dic.append("Lib: %s" % str(item.find("span", "ns").a.text))
+    dic.append("Namespace: %s" % str(item.find("span", "ns").a.text))
     #Available exmaples
     dic.append("Available Examples: %s" % str(item.find("span", "examples_count").text.split()[0]))
     #http
@@ -122,7 +123,7 @@ def parse_doc(url):
     l.append(ret.split("\n"))
     return l
 
-class CljSearchCommand(sublime_plugin.WindowCommand, sublime.Window):
+class CljSearchCommand(sublime_plugin.WindowCommand):
     def run(self):
         """Runs the initial plugin"""
         self.window.show_input_panel("Search", "", self.on_done, None, None)
@@ -143,6 +144,7 @@ class CljSearchCommand(sublime_plugin.WindowCommand, sublime.Window):
         self.window.show_quick_panel(self.panel_items, self.done)
 
     def done(self, num):
+        if num == -1: return
         options = [
                     "View docs",
                     "View source",
@@ -177,13 +179,18 @@ class CljSearchCommand(sublime_plugin.WindowCommand, sublime.Window):
             buffr = "\n".join(self.inser_content[0])
             view = self.window.active_view()
             e = view.begin_edit()
-            view.insert(e, 0, buffr[2:])
+            for r in view.sel():
+                if r.empty():
+                    view.insert (e, r.a, buffr[2:])
+                else:
+                    view.replace(e, r,   buffr[2:])
             view.end_edit(e)
         if num == 1:
             self.done(self.num)
 
 
     def selected_item(self, num):
+        self.t = 0
         if num == 0:
             self.doc_check(parse_doc(self.search_links[self.num]))
         if num == 1:
@@ -198,3 +205,31 @@ class CljSearchCommand(sublime_plugin.WindowCommand, sublime.Window):
             webbrowser.open(self.search_links[self.num])
         if num == 5:
             self.search()
+
+
+#Select word hack from bronson :D
+# https://github.com/bronson/GotoFile
+
+
+def expanded_selection(view, line, left, right):
+    pat = re.compile('^[A-Za-z0-9_.-]+$')
+    while left > line.begin() and re.match(pat, view.substr(left-1)): left -= 1
+    while right < line.end() and re.match(pat, view.substr(right)): right += 1
+    return view.substr(sublime.Region(left,right))
+
+
+def selection_words(view):
+    words = []
+    for sel in view.sel():
+        if sel.empty():
+            line = view.line(sel.begin())
+            words.append(expanded_selection(view, line, sel.begin(), sel.begin()))
+        else:
+            words.append(view.substr(sel))
+    # print "FILES: " + repr(words)
+    return words
+
+class GotoSelectionCommand(sublime_plugin.TextCommand, sublime.View):
+    def run(self, edit):
+        word = selection_words(self.view)[0]
+        CljSearchCommand(self.view.window()).on_done(word)
