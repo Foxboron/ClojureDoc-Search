@@ -93,7 +93,7 @@ def parse_source(url):
         l.append(ret.split("\n"))
         return l
     stuff = stuff.find("pre", "brush: clojure")
-    ret = " \n" + stuff.text
+    ret = "Source:        \n" + stuff.text
     l.append(ret.split("\n"))
     return l
 
@@ -101,14 +101,17 @@ def parse_source(url):
 def parse_example(url):
     v = content_request(url)
     soup = BeautifulSoup(v)
-    stuff = soup.find("div", "hidden plain_content")
+    stuff = soup.find_all("div", "hidden plain_content")
     l = []
     if not stuff:
         ret = " \n" + "NO EXAMPLES! OMG!\n"
         l.append(ret.split("\n"))
         return l
-    ret = " \n" + stuff.text
-    l.append(ret.split("\n"))
+    num = 1
+    for i in stuff:
+        ret = "Example #"+num+":    \n" + i.text.rstrip("\n")
+        l.append(ret.split("\n"))
+        num += 1
     return l
 
 
@@ -123,7 +126,7 @@ def parse_doc(url):
         ret = " \n" + "NO DOCS! OMG GO FIX NAOW!!\n"
         l.append(ret.split("\n"))
         return l
-    ret = " \n" + stuff.text
+    ret = "Documentation: \n" + stuff.text
     l.append(ret.split("\n"))
     return l
 
@@ -188,9 +191,9 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
             e = view.begin_edit()
             for r in view.sel():
                 if r.empty():
-                    view.insert(e, r.a, buffr[2:])
+                    view.insert(e, r.a, buffr[16:])
                 else:
-                    view.replace(e, r,   buffr[2:])
+                    view.replace(e, r,   buffr[16:])
             view.end_edit(e)
         if num == 1:
             self.done(self.num)
@@ -238,5 +241,4 @@ def selection_words(view):
 class GotoSelectionCommand(sublime_plugin.TextCommand, sublime.View):
     def run(self, edit):
         word = selection_words(self.view)[0]
-        print word
-        #CljSearchCommand(self.view.window()).on_done(word)
+        CljSearchCommand(self.view.window()).on_done(word)
