@@ -13,7 +13,7 @@ If the search term got a 100% match in the docs you get straight too the terms m
 There is also an option to see other topics of interest with `See Also...` option. The back function works for everything!
 
 ## Issues
- * Sublime Text 2's quick panel scales by the largest, give an awkward view for several examples
+ * Sublime Text 2's quick panel scales by the largest, gives an awkward view for several examples
  * Can only insert the first example in a list.
 
 ![example picture](http://i.imgur.com/ODYpi.png "Example-pic")
