@@ -238,4 +238,5 @@ def selection_words(view):
 class GotoSelectionCommand(sublime_plugin.TextCommand, sublime.View):
     def run(self, edit):
         word = selection_words(self.view)[0]
-        CljSearchCommand(self.view.window()).on_done(word)
+        print word
+        #CljSearchCommand(self.view.window()).on_done(word)
