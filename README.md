@@ -14,6 +14,4 @@ There is also an option to see other topics of interest with `See Also...` optio
 
 ## Issues
  * Sublime Text 2's quick panel scales by the largest, gives an awkward view for several examples
- * Can only insert the first example in a list.
-
 ![example picture](http://i.imgur.com/ODYpi.png "Example-pic")
