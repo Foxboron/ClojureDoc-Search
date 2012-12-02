@@ -13,12 +13,13 @@ def request(var):
 
 
 def content_request(url):
-    "nvm this"
+    "need mah html!"
     req = urllib2.urlopen(url).read()
     return req
 
 
 def bs4_parse(var):
+    """Parses out the indvidual search item"""
     soup = BeautifulSoup(request(var))
     stuff = soup.body.find_all("div", "search_result")
     items = []
@@ -31,6 +32,7 @@ def bs4_parse(var):
 
 
 def parse_list(item):
+    """Parses out the main search results."""
     dic = []
     #What
     dic.append(str(item.find("a").text))
@@ -50,7 +52,9 @@ def parse_list(item):
     web = item.find("span", "linktext").text
     return (dic, web)
 
+
 def seealso_search(url):
+    """Searches the 'See Also...' part. """
     v = content_request(url)
     soup = BeautifulSoup(v)
     stuff = soup.body.find_all("li", "see_also_item")
@@ -64,6 +68,7 @@ def seealso_search(url):
 
 
 def new_parse(n):
+    """Parsing the HTML 'see also...' links and names."""
     http = "http://clojuredocs.org"
     dic = []
     #Name
@@ -84,6 +89,7 @@ def new_parse(n):
 
 
 def parse_source(url):
+    """Parsing source"""
     v = content_request(url)
     soup = BeautifulSoup(v)
     stuff = soup.find("div", "source_content")
@@ -99,6 +105,7 @@ def parse_source(url):
 
 
 def parse_example(url):
+    """Parsing examples"""
     v = content_request(url)
     soup = BeautifulSoup(v)
     stuff = soup.find_all("div", "hidden plain_content")
@@ -109,13 +116,14 @@ def parse_example(url):
         return l
     num = 1
     for i in stuff:
-        ret = "Example #"+num+":    \n" + i.text.rstrip("\n")
+        ret = "Example #" + str(num) + ":    \n" + i.text.rstrip("\n")
         l.append(ret.split("\n"))
         num += 1
     return l
 
 
 def parse_doc(url):
+    """Parsing the documentation."""
     v = content_request(url)
     soup = BeautifulSoup(v)
     stuff = soup.find("div", "doc").find("div", "content")
@@ -141,9 +149,11 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
         self.res, search_links = bs4_parse(search)
         for i in range(0, len(self.res)):
             if search == self.res[i][0]:
+                self.panel_items = self.res
+                self.search_links = search_links
                 self.done(i)
+                return
         self.search(s=self.res, link=search_links)
-        return 0
 
     def search(self, s=None, link=None):
         """Created a seperate method for the search.
@@ -155,7 +165,7 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
         self.window.show_quick_panel(self.panel_items, self.done)
 
     def done(self, num):
-        if num == -1: return
+        """Main menu!"""
         options = [
                     "View docs",
                     "View source",
@@ -168,16 +178,22 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
         self.window.show_quick_panel(options, self.selected_item)
 
     def doc_view(self, lis):
+        """Directs back to the sub menu"""
         self.inser_content = lis
         self.window.show_quick_panel(lis, self.select_edit)
 
     def doc_check(self, lis):
+        """Returns directly back to the main menu."""
         self.window.show_quick_panel(lis, self.return_from_doc)
 
     def return_from_doc(self, num):
+        """Because of the depedancy on 'self.num' to actually know where we are
+        I had to do this....yeah i know...dat method...."""
         self.done(self.num)
 
     def select_edit(self, num):
+        """Sub menu!"""
+        self.selected_example = num
         options = [
                     "Insert",
                     "Back"
@@ -185,8 +201,9 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
         self.window.show_quick_panel(options, self.inser_back)
 
     def inser_back(self, num):
+        """2nd menu directing the Insert/Back options."""
         if num == 0:
-            buffr = "\n".join(self.inser_content[0])
+            buffr = "\n".join(self.inser_content[self.selected_example])
             view = self.window.active_view()
             e = view.begin_edit()
             for r in view.sel():
@@ -199,7 +216,7 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
             self.done(self.num)
 
     def selected_item(self, num):
-        self.t = 0
+        """1st menu. Directing the options to the main menu."""
         if num == 0:
             self.doc_check(parse_doc(self.search_links[self.num]))
         if num == 1:
@@ -207,7 +224,6 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
         if num == 2:
             self.doc_view(parse_example(self.search_links[self.num]))
         if num == 3:
-            print self.search_links[self.num]
             self.see_also, self.see_also_links = seealso_search(self.search_links[self.num])
             self.search(s=self.see_also, link=self.see_also_links)
         if num == 4:
@@ -216,14 +232,16 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
             self.search()
 
 
-#Select word hack from bronson :D
+# Select word hack from bronson :D
 # https://github.com/bronson/GotoFile
 
 
 def expanded_selection(view, line, left, right):
     pat = re.compile('^[A-Za-z0-9_.-?*]+$')
-    while left > line.begin() and re.match(pat, view.substr(left-1)): left -= 1
-    while right < line.end() and re.match(pat, view.substr(right)): right += 1
+    while left > line.begin() and re.match(pat, view.substr(left - 1)):
+        left -= 1
+    while right < line.end() and re.match(pat, view.substr(right)):
+        right += 1
     return view.substr(sublime.Region(left, right))
 
 
@@ -237,6 +255,7 @@ def selection_words(view):
             words.append(view.substr(sel))
     # print "FILES: " + repr(words)
     return words
+
 
 class GotoSelectionCommand(sublime_plugin.TextCommand, sublime.View):
     def run(self, edit):
