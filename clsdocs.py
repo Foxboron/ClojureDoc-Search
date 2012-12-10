@@ -3,24 +3,23 @@ import sublime_plugin
 import urllib2
 from bs4 import BeautifulSoup
 import webbrowser
-import re
-
+import re 
 
 def request(var):
-    s = "http://clojuredocs.org/search?q=%s" % var
-    req = urllib2.urlopen(s).read()
+    var = "http://clojuredocs.org/search?q=%s" % var
+    req = urllib2.urlopen(var).read()
     return req
 
 
 def content_request(url):
-    "need mah html!"
     req = urllib2.urlopen(url).read()
     return req
 
 
 def bs4_parse(var):
     """Parses out the indvidual search item"""
-    soup = BeautifulSoup(request(var))
+    var = request(var)
+    soup = BeautifulSoup(var)
     stuff = soup.body.find_all("div", "search_result")
     items = []
     sites = []
@@ -166,10 +165,11 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
 
     def done(self, num):
         """Main menu!"""
+        if num == -1: return
         options = [
-                    "View docs",
-                    "View source",
-                    "Insert Example",
+                    "View Docs",
+                    "View Source",
+                    "View Examples",
                     "See Also...",
                     "Open website",
                     "Back"
