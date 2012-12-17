@@ -1,3 +1,20 @@
+"""
+Copyright (C) 2012  Morten Linderud
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+"""
+
 import sublime
 import sublime_plugin
 import urllib2
@@ -145,14 +162,13 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
 
     def on_done(self, search):
         """Fetches the search results"""
-        self.res, search_links = bs4_parse(search)
+        self.res, self.search_links = bs4_parse(search)
         for i in range(0, len(self.res)):
             if search == self.res[i][0]:
                 self.panel_items = self.res
-                self.search_links = search_links
                 self.done(i)
                 return
-        self.search(s=self.res, link=search_links)
+        self.search(s=self.res, link=self.search_links)
 
     def search(self, s=None, link=None):
         """Created a seperate method for the search.
@@ -193,6 +209,7 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
 
     def select_edit(self, num):
         """Sub menu!"""
+        if num == -1: return self.done(self.num)
         self.selected_example = num
         options = [
                     "Insert",
@@ -217,6 +234,8 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
 
     def selected_item(self, num):
         """1st menu. Directing the options to the main menu."""
+        if num == -1:
+            self.search(s=self.res, link=self.search_links)
         if num == 0:
             self.doc_check(parse_doc(self.search_links[self.num]))
         if num == 1:
