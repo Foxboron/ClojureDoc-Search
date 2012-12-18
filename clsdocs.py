@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Copyright (c) 2012, Morten "Foxboron" Linderud
 All rights reserved.
