@@ -34,7 +34,7 @@ import sublime
 import sublime_plugin
 import urllib2
 from bs4 import BeautifulSoup
-import webbrowserd
+import webbrowser
 
 def request(var):
     var = "http://clojuredocs.org/search?q=%s" % var
