@@ -32,10 +32,23 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sublime
 import sublime_plugin
-import urllib2
-from bs4 import BeautifulSoup
 import webbrowser
 import re
+import sys
+
+
+PY3 = sys.version_info[0] == 3
+
+if PY3:
+    import urllib.request as urllib2
+    from .py3k import BeautifulSoup
+    from .edit import Edit
+
+else:
+    import urllib2
+    from py2k import BeautifulSoup
+    from edit import Edit
+
 
 def request(var):
     var = "http://clojuredocs.org/search?q=%s" % var
@@ -192,7 +205,7 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
             self.panel_items = s
         if link:
             self.search_links = link
-        self.window.show_quick_panel(self.panel_items, self.done)
+        sublime.set_timeout(lambda: self.window.show_quick_panel(self.panel_items, self.done), 1)
 
     def done(self, num):
         """Main menu!"""
@@ -206,16 +219,16 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
                     "Back"
                     ]
         self.num = num
-        self.window.show_quick_panel(options, self.selected_item)
+        sublime.set_timeout(lambda: self.window.show_quick_panel(options, self.selected_item), 1)
 
     def doc_view(self, lis):
         """Directs back to the sub menu"""
         self.inser_content = lis
-        self.window.show_quick_panel(lis, self.select_edit)
+        sublime.set_timeout(lambda: self.window.show_quick_panel(lis, self.select_edit), 1)
 
     def doc_check(self, lis):
         """Returns directly back to the main menu."""
-        self.window.show_quick_panel(lis, self.return_from_doc)
+        sublime.set_timeout(lambda: self.window.show_quick_panel(lis, self.return_from_doc), 1)
 
     def return_from_doc(self, num):
         """Because of the depedancy on 'self.num' to actually know where we are
@@ -230,20 +243,19 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
                     "Insert",
                     "Back"
                     ]
-        self.window.show_quick_panel(options, self.inser_back)
+        sublime.set_timeout(lambda: self.window.show_quick_panel(options, self.inser_back), 1)
 
     def inser_back(self, num):
         """2nd menu directing the Insert/Back options."""
         if num == 0:
             buffr = "\n".join(self.inser_content[self.selected_example])
             view = self.window.active_view()
-            e = view.begin_edit()
-            for r in view.sel():
-                if r.empty():
-                    view.insert(e, r.a, buffr[16:])
-                else:
-                    view.replace(e, r,   buffr[16:])
-            view.end_edit(e)
+            with Edit(view) as edit:
+                for r in view.sel():
+                    if r.empty():
+                        edit.insert(r.a, buffr[16:])
+                    else:
+                        edit.replace(r, buffr[16:])
         if num == 1:
             self.done(self.num)
 
