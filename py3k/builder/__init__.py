@@ -286,7 +286,7 @@ class HTMLTreeBuilder(TreeBuilder):
 def register_treebuilders_from(module):
     """Copy TreeBuilders from the given module into this module."""
     # I'm fairly sure this is not the best way to do this.
-    this_module = sys.modules['bs4.builder']
+    this_module = sys.modules['ClojureDocSearch.py3k.builder']
     for name in module.__all__:
         obj = getattr(module, name)
 
@@ -299,9 +299,10 @@ def register_treebuilders_from(module):
 # Builders are registered in reverse order of priority, so that custom
 # builder registrations will take precedence. In general, we want lxml
 # to take precedence over html5lib, because it's faster. And we only
+
 # want to use HTMLParser as a last result.
-from ...py3k.builder import _htmlparser
-register_treebuilders_from(htmlparser)
+from . import _htmlparser
+register_treebuilders_from(_htmlparser)
 try:
     from . import _html5lib
     register_treebuilders_from(_html5lib)

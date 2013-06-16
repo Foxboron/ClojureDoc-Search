@@ -1,5 +1,6 @@
 """Use the HTMLParser library to parse HTML files that aren't too bad."""
 
+print("LOL")
 __all__ = [
     'HTMLParserTreeBuilder',
     ]
@@ -10,6 +11,7 @@ from html.parser import (
     )
 import sys
 import warnings
+
 
 # Starting in Python 3.2, the HTMLParser constructor takes a 'strict'
 # argument, which we'd like to set to False. Unfortunately,
@@ -24,16 +26,16 @@ CONSTRUCTOR_TAKES_STRICT = (
     or (major == 3 and minor > 2)
     or (major == 3 and minor == 2 and release >= 3))
 
-from bs4.element import (
+from ..element import (
     CData,
     Comment,
     Declaration,
     Doctype,
     ProcessingInstruction,
     )
-from bs4.dammit import EntitySubstitution, UnicodeDammit
+from ..dammit import EntitySubstitution, UnicodeDammit
 
-from bs4.builder import (
+from ..builder import (
     HTML,
     HTMLTreeBuilder,
     STRICT,
