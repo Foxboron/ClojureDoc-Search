@@ -300,7 +300,7 @@ def register_treebuilders_from(module):
 # builder registrations will take precedence. In general, we want lxml
 # to take precedence over html5lib, because it's faster. And we only
 # want to use HTMLParser as a last result.
-from ...py3k.builder import htmlparser
+from ...py3k.builder import _htmlparser
 register_treebuilders_from(htmlparser)
 try:
     from . import _html5lib
