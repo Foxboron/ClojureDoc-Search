@@ -286,7 +286,7 @@ class HTMLTreeBuilder(TreeBuilder):
 def register_treebuilders_from(module):
     """Copy TreeBuilders from the given module into this module."""
     # I'm fairly sure this is not the best way to do this.
-    this_module = sys.modules['ClojureDocSearch.py3k.builder']
+    this_module = sys.modules['ClojureDoc-Search.py3k.builder']
     for name in module.__all__:
         obj = getattr(module, name)
 
