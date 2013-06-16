@@ -30,18 +30,22 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-#import sublime
-#import sublime_plugin
-try:
-    import urllib2
-except ImportError:
-    import urllib as urllib2
-# try:
-#     import bs4
-# except ImportError:
-from .bs4 import BeautifulSoup
+import sublime
+import sublime_plugin
 import webbrowser
 import re
+import sys
+
+PY3 = sys.version_info[0] == 3
+
+if PY3:
+    import urllib as urllib2
+    from .py3k import BeautifulSoup
+
+else:
+    import urllib2
+    from py2k import BeautifulSoup
+
 
 def request(var):
     var = "http://clojuredocs.org/search?q=%s" % var
@@ -57,7 +61,7 @@ def content_request(url):
 def bs4_parse(var):
     """Parses out the indvidual search item"""
     var = request(var)
-    soup = bs4.BeautifulSoup(var)
+    soup = BeautifulSoup(var)
     stuff = soup.body.find_all("div", "search_result")
     items = []
     sites = []
