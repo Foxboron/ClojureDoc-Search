@@ -24,16 +24,16 @@ CONSTRUCTOR_TAKES_STRICT = (
     or (major == 3 and minor > 2)
     or (major == 3 and minor == 2 and release >= 3))
 
-from bs4.element import (
+from py2k.element import (
     CData,
     Comment,
     Declaration,
     Doctype,
     ProcessingInstruction,
     )
-from bs4.dammit import EntitySubstitution, UnicodeDammit
+from py2k.dammit import EntitySubstitution, UnicodeDammit
 
-from bs4.builder import (
+from py2k.builder import (
     HTML,
     HTMLTreeBuilder,
     STRICT,

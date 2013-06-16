@@ -1,8 +1,8 @@
 """Diagnostic functions, mainly for use when doing tech support."""
 from StringIO import StringIO
 from HTMLParser import HTMLParser
-from bs4 import BeautifulSoup, __version__
-from bs4.builder import builder_registry
+from py2k import BeautifulSoup, __version__
+from py2k.builder import builder_registry
 import os
 import random
 import time
