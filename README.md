@@ -1,7 +1,7 @@
 ClojureDocSearch  
 ================  
   
-**A ClojureDoc searcher inside of Sublime Text 2!**
+**A ClojureDoc searcher inside of Sublime Text 2 and 3!**
 
     
 You can use the keybind `ctrl+shift+c` to search a word, either by placing your cursor ontop of the word or by selecting it!  
