@@ -139,7 +139,7 @@ def parse_source(url):
     stuff = soup.find("div", "source_content")
     l = []
     if not stuff:
-        ret = " \n" + "NO SOURCE! OMG!\n"
+        ret = " \n" + "No source code available!\n"
         l.append(ret.split("\n"))
         return l
     stuff = stuff.find("pre", "brush: clojure")
@@ -155,7 +155,7 @@ def parse_example(url):
     stuff = soup.find_all("div", "hidden plain_content")
     l = []
     if not stuff:
-        ret = " \n" + "NO EXAMPLES! OMG!\n"
+        ret = " \n" + "No examples available!\n"
         l.append(ret.split("\n"))
         return l
     num = 1
@@ -175,11 +175,24 @@ def parse_doc(url):
         e.replace_with("\n")
     l = []
     if not stuff:
-        ret = " \n" + "NO DOCS! OMG GO FIX NAOW!!\n"
+        ret = " \n" + "No documentation available!\n"
         l.append(ret.split("\n"))
         return l
     ret = "Documentation: \n" + stuff.text
     l.append(ret.split("\n"))
+    return l
+
+
+def show_quick_panel_hack(l):
+    """show_quick_panel looks at the first element of a list's lenght and forces it
+        on any element after after this. If the element got a shorter lenght then
+        the first item, you get a index error. This makes sure all elements of the
+        list is the same lenght as the first element by appending nothing."""
+    lenght = len(l[0])
+    for i in l[1:]:
+        if len(i) < lenght:
+            print(i)
+            [i.append("") for n in range(0,(lenght-len(i)))]
     return l
 
 
@@ -224,6 +237,8 @@ class CljSearchCommand(sublime_plugin.WindowCommand):
     def doc_view(self, lis):
         """Directs back to the sub menu"""
         self.inser_content = lis
+        if isinstance(lis[0], list):
+            lis = show_quick_panel_hack(lis)
         sublime.set_timeout(lambda: self.window.show_quick_panel(lis, self.select_edit), 1)
 
     def doc_check(self, lis):
